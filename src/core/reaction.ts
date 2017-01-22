@@ -41,10 +41,10 @@ export class Reaction implements IDerivation, IReactionPublic {
 	runId = 0;
 	unboundDepsCount = 0;
 	__mapid = "#" + getNextId();
-	isDisposed = false;
-	_isScheduled = false;
-	_isTrackPending = false;
-	_isRunning = false;
+	isDisposed = false; //不再响应数据的更新
+	_isScheduled = false; //当前Reaction是否在globalState.pendingReactions里
+	_isTrackPending = false;// 正在追踪它依赖数据
+	_isRunning = false;// 正在运行该 reaction
 	errorHandler: (error: any, derivation: IDerivation) => void;
 
 	constructor(public name: string = "Reaction@" + getNextId(), private onInvalidate: () => void) { }
@@ -246,7 +246,7 @@ function runReactionsHelper() {
 			console.error(`Reaction doesn't converge to a stable state after ${MAX_REACTION_ITERATIONS} iterations.`
 				+ ` Probably there is a cycle in the reactive function: ${allReactions[0]}`);
 		}
-		let remainingReactions = allReactions.splice(0);
+		let remainingReactions = allReactions.splice(0); // 清空globalState.pendingReactions
 		for (let i = 0, l = remainingReactions.length; i < l; i++)
 			remainingReactions[i].runReaction();
 	}

@@ -201,7 +201,7 @@ export function propagateChangeConfirmed(observable: IObservable) {
 }
 
 // Used by computed when its dependency changed, but we don't wan't to immidiately recompute.
-export function propagateMaybeChanged(observable: IObservable) {
+export function propagateMaybeChanged(observable: IObservable) {// computedvalue.onBecomeStale 会调用 
 	// invariantLOS(observable, "maybe start");
 	if (observable.lowestObserverState !== IDerivationState.UP_TO_DATE) return;
 	observable.lowestObserverState = IDerivationState.POSSIBLY_STALE;
