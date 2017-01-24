@@ -2,7 +2,7 @@ export interface IEnhancer<T> {
 	(newValue: T, oldValue: T | undefined, name: string): T;
 }
 
-export interface IModifierDescriptor<T> {
+export interface IModifierDescriptor<T> {// 修饰符描述符号规范
 	isMobxModifierDescriptor: boolean;
 	initialValue: T | undefined;
 	enhancer: IEnhancer<T>;

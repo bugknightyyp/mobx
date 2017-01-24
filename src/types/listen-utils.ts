@@ -1,7 +1,7 @@
 import {Lambda, once} from "../utils/utils";
 import {untrackedStart, untrackedEnd} from "../core/derivation";
 
-export interface IListenable {
+export interface IListenable {// 可监听对象规范
 	changeListeners: Function[] | null;
 	observe(handler: (change: any, oldValue?: any) => void, fireImmediately?: boolean): Lambda;
 }

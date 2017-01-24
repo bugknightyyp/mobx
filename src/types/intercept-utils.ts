@@ -1,7 +1,7 @@
 import {Lambda, once, invariant} from "../utils/utils";
 import {untrackedStart, untrackedEnd} from "../core/derivation";
 
-export type IInterceptor<T> = (change: T) => T;
+export type IInterceptor<T> = (change: T) => T;// 拦截器规范
 
 export interface IInterceptable<T> {
 	interceptors: IInterceptor<T>[] | null;
@@ -29,7 +29,7 @@ export function interceptChange<T>(interceptable: IInterceptable<T>, change: T):
 		if (interceptors) for (let i = 0, l = interceptors.length; i < l; i++) {
 			change = interceptors[i](change);
 			invariant(!change || (change as any).type, "Intercept handlers should return nothing or a change object");
-			if (!change)
+			if (!change)// 如果上一个interceptor返回的结果为 falsey 则不再执行后面的interceptor
 				break;
 		}
 		return change;
