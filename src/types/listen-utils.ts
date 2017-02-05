@@ -15,7 +15,7 @@ export function registerListener<T>(listenable: IListenable, handler: Function):
 	listeners.push(handler);
 	return once(() => {
 		const idx = listeners.indexOf(handler);
-		if (idx !== -1)
+		if (idx !== -1)// 若存在则删除
 			listeners.splice(idx, 1);
 	});
 }
