@@ -139,6 +139,12 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
  * update observing to be newObserving with unique observables
  * notify observers that become observed/unobserved
  */
+ /*
+	负责将 derivation 这次执行所依赖的 observable 与上次执行所依赖的 observable 做比较, 做出处理，分3种情况处理：
+	对于不再依赖的该 derivation 的 observable 则从 observable.observers 中移除该derivation
+	对于新增且依赖的该 derivation 的 observable 则把该derivation 保存到  observable.observers 中
+	对于不变的，则不错任何处理
+ */
 function bindDependencies(derivation: IDerivation) {
 	// invariant(derivation.dependenciesState !== IDerivationState.NOT_TRACKING, "INTERNAL ERROR bindDependencies expects derivation.dependenciesState !== -1");
 

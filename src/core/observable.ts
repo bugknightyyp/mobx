@@ -15,13 +15,14 @@ export interface IObservable extends IDepTreeNode {
 	 * If this id equals the *run* id of the current derivation,
 	 * the dependency is already established
 	 */
-	lastAccessedBy: number;
+	lastAccessedBy: number; // 运行 derivation 时生成的 runId, 保证 derivation在只保存一次某一数据
 
 	lowestObserverState: IDerivationState; // Used to avoid redundant propagations
 	isPendingUnobservation: boolean; // Used to push itself to global.pendingUnobservations at most once per batch.
+	//保证每一次批处理时，global.pendingUnobservations 值记录该 observable 一次
 
-	observers: IDerivation[]; // mantain _observers in raw array for for way faster iterating in propagation.
-	observersIndexes: {}; // map derivation.__mapid to _observers.indexOf(derivation) (see removeObserver)
+	observers: IDerivation[]; // mantain _observers in raw array for for way faster iterating in propagation. 记录依赖该 observable 的derivation
+	observersIndexes: {}; // map derivation.__mapid to _observers.indexOf(derivation) (see removeObserver) 加速对 observers 的删除处理
 
 	onBecomeUnobserved();
 }
@@ -54,8 +55,8 @@ export function addObserver(observable: IObservable, node: IDerivation) {
 	// invariantObservers(observable);
 
 	const l = observable.observers.length;
-	if (l) { // because object assignment is relatively expensive, let's not store data about index 0.
-		observable.observersIndexes[node.__mapid] = l;
+	if (l) { // because object assignment is relatively expensive, let's not store data about index 0. 不保存 index == 0 的情况
+		observable.observersIndexes[node.__mapid] = l; // 保存__mapid 与 index的映射关系
 	}
 	observable.observers[l] = node;
 
@@ -70,12 +71,12 @@ export function removeObserver(observable: IObservable, node: IDerivation) {
 	// invariant(observable._observers.indexOf(node) !== -1, "INTERNAL ERROR remove already removed node");
 	// invariantObservers(observable);
 
-	if (observable.observers.length === 1) {
+	if (observable.observers.length === 1) {// 当没有 derivation 依赖时
 		// deleting last observer
 		observable.observers.length = 0;
 
 		queueForUnobservation(observable);
-	} else {
+	} else {// 总的思想就是 要删除的node 和 数组中的最后一个元素互换位置，这就是利用 pop 来删除元素的技巧
 		// deleting from _observersIndexes is straight forward, to delete from _observers, let's swap `node` with last element
 		const list = observable.observers;
 		const map = observable.observersIndexes;
@@ -95,7 +96,7 @@ export function removeObserver(observable: IObservable, node: IDerivation) {
 	// invariant(observable._observers.indexOf(node) === -1, "INTERNAL ERROR remove already removed node2");
 }
 
-export function queueForUnobservation(observable: IObservable) {
+export function queueForUnobservation(observable: IObservable) {// 注意是在 per batch 里的操作
 	if (!observable.isPendingUnobservation) {
 		// invariant(globalState.inBatch > 0, "INTERNAL ERROR, remove should be called only inside batch");
 		// invariant(observable._observers.length === 0, "INTERNAL ERROR, shuold only queue for unobservation unobserved observables");
@@ -109,7 +110,7 @@ export function queueForUnobservation(observable: IObservable) {
  * During a batch `onBecomeUnobserved` will be called at most once per observable.
  * Avoids unnecessary recalculations.
  */
-export function startBatch() {
+export function startBatch() {//用来批处理数据变化，等批量的数据变化后，才通知 deviation 执行
 	globalState.inBatch++;
 }
 
@@ -166,7 +167,7 @@ function invariantLOS(observable: IObservable, msg) {
  */
 
 // Called by Atom when its value changes
-export function propagateChanged(observable: IObservable) {
+export function propagateChanged(observable: IObservable) {//当 observable 发生变化时，将依赖其的 derivation 的 dependenciesState 设置为 STALE
 	// invariantLOS(observable, "changed start");
 	if (observable.lowestObserverState === IDerivationState.STALE) return;
 	observable.lowestObserverState = IDerivationState.STALE;
@@ -201,7 +202,7 @@ export function propagateChangeConfirmed(observable: IObservable) {
 }
 
 // Used by computed when its dependency changed, but we don't wan't to immidiately recompute.
-export function propagateMaybeChanged(observable: IObservable) {// computedvalue.onBecomeStale 会调用 
+export function propagateMaybeChanged(observable: IObservable) {// computedvalue.onBecomeStale 会调用
 	// invariantLOS(observable, "maybe start");
 	if (observable.lowestObserverState !== IDerivationState.UP_TO_DATE) return;
 	observable.lowestObserverState = IDerivationState.POSSIBLY_STALE;
