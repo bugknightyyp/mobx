@@ -139,7 +139,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
 
 	computeValue(track: boolean) {
 		this.isComputing = true;
-		const prevAllowStateChanges = allowStateChangesStart(false);
+		const prevAllowStateChanges = allowStateChangesStart(false);//在跟踪 derivation 之前，先禁止 observable 状态改变
 		let res: T | CaughtException;
 		if (track) {
 			res = trackDerivedFunction(this, this.derivation, this.scope);

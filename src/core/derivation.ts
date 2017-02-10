@@ -114,6 +114,9 @@ export function checkIfStateModificationsAreAllowed() {
  * The tracking information is stored on the `derivation` object and the derivation is registered
  * as observer of any of the accessed observables.
  */
+ /*
+	 执行提供的方法 f, 跟踪访问了那些 observable， 所有的跟踪信息保存在 derivation 对象里， derivative也会注册到 所访问的 observable 里
+ */
 export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, context) {
 	// pre allocate array allocation + room for variation in deps
 	// array will be trimmed by bindDependencies
