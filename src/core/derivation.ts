@@ -73,9 +73,9 @@ export function shouldCompute(derivation: IDerivation): boolean {
 			const obs = derivation.observing, l = obs.length;
 			for (let i = 0; i < l; i++) {
 				const obj = obs[i];
-				if (isComputedValue(obj)) {
+				if (isComputedValue(obj)) {// 如果依赖的 observable 是 computedValue
 					try {
-						obj.get();
+						obj.get();// 重新计算其值
 					} catch (e) {
 						// we are not interested in the value *or* exception at this moment, but if there is one, notify all
 						untrackedEnd(prevUntracked);

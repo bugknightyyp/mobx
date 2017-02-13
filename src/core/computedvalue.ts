@@ -91,7 +91,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
 				this.value = this.computeValue(false);
 			endBatch();
 		} else {
-			reportObserved(this);
+			reportObserved(this);// 报告给当前正在执行的 derivation
 			if (shouldCompute(this))
 				if (this.trackAndCompute())
 					propagateChangeConfirmed(this);
@@ -139,10 +139,10 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
 
 	computeValue(track: boolean) {
 		this.isComputing = true;
-		const prevAllowStateChanges = allowStateChangesStart(false);//在跟踪 derivation 之前，先禁止 observable 状态改变
+		const prevAllowStateChanges = allowStateChangesStart(false);//在跟踪 derivation 之前，先禁止 observable 状态改变，好像基本么什么用
 		let res: T | CaughtException;
 		if (track) {
-			res = trackDerivedFunction(this, this.derivation, this.scope);
+			res = trackDerivedFunction(this, this.derivation, this.scope);// 完成跟踪 derivation 的依赖
 		} else {
 			try {
 				res = this.derivation.call(this.scope);
