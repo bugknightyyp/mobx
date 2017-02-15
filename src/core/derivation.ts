@@ -64,11 +64,11 @@ export function isCaughtException(e): e is CaughtException {
  * That is because we assume that if first x dependencies of derivation doesn't change
  * than derivation shuold run the same way up until accessing x-th dependency.
  */
-export function shouldCompute(derivation: IDerivation): boolean {
+export function shouldCompute(derivation: IDerivation): boolean {// 只在 reaction.runReaction() 和 computedValue.get() 里使用
 	switch (derivation.dependenciesState) {
 		case IDerivationState.UP_TO_DATE: return false;
 		case IDerivationState.NOT_TRACKING: case IDerivationState.STALE: return true;
-		case IDerivationState.POSSIBLY_STALE: {
+		case IDerivationState.POSSIBLY_STALE: {// 说明 derivation 依赖的 observable中含有 computedValue
 			const prevUntracked = untrackedStart(); // no need for those computeds to be reported, they will be picked up in trackDerivedFunction.
 			const obs = derivation.observing, l = obs.length;
 			for (let i = 0; i < l; i++) {

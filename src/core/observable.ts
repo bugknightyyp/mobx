@@ -184,7 +184,7 @@ export function propagateChanged(observable: IObservable) {//当 observable 发�
 }
 
 // Called by ComputedValue when it recalculate and its value changed
-export function propagateChangeConfirmed(observable: IObservable) {
+export function propagateChangeConfirmed(observable: IObservable) {//此时的 observable 是 ComputedValue
 	// invariantLOS(observable, "confirmed start");
 	if (observable.lowestObserverState === IDerivationState.STALE) return;
 	observable.lowestObserverState = IDerivationState.STALE;
@@ -193,9 +193,10 @@ export function propagateChangeConfirmed(observable: IObservable) {
 	let i = observers.length;
 	while (i--) {
 		const d = observers[i];
-		if (d.dependenciesState === IDerivationState.POSSIBLY_STALE)
+		if (d.dependenciesState === IDerivationState.POSSIBLY_STALE)// 这时的 globalState.trackingDerivation != d
 			d.dependenciesState = IDerivationState.STALE;
 		else if (d.dependenciesState === IDerivationState.UP_TO_DATE) // this happens during computing of `d`, just keep lowestObserverState up to date.
+		//这时的 globalState.trackingDerivation == d, 也就是上面的注释：这发生在 正在计算 "d" 期间，ComputedValue.get() 已经重新计算了, 所以状态已经是最新的，所以设置状态设置为UP_TO_DATE
 			observable.lowestObserverState = IDerivationState.UP_TO_DATE;
 	}
 	// invariantLOS(observable, "confirmed end");

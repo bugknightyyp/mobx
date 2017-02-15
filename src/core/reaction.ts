@@ -53,7 +53,7 @@ export class Reaction implements IDerivation, IReactionPublic {
 		this.schedule();
 	}
 
-	schedule() {
+	schedule() {// 就上将 当前Reaction保存到globalState.pendingReactions里
 		if (!this._isScheduled) {
 			this._isScheduled = true;
 			globalState.pendingReactions.push(this);
