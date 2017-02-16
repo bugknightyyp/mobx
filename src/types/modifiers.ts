@@ -21,7 +21,7 @@ export function createModifierDescriptor<T>(enhancer: IEnhancer<T>, initialValue
 	};
 }
 
-export function deepEnhancer(v, _, name) {
+export function deepEnhancer(v, _, name) {//深度增强器，根据数据的处理分类处理
 	if (isModifierDescriptor(v))
 		fail("You tried to assign a modifier wrapped value to a collection, please define modifiers when creating the collection, not when modifying it");
 
@@ -58,7 +58,7 @@ export function shallowEnhancer(v, _, name): any {
 	return fail("The shallow modifier / decorator can only used in combination with arrays, objects and maps");
 }
 
-export function referenceEnhancer(newValue?) {
+export function referenceEnhancer(newValue?) {// 引用增强器，不做处理
 	// never turn into an observable
 	return newValue;
 }
