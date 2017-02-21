@@ -162,7 +162,7 @@ export class Reaction implements IDerivation, IReactionPublic {
 		globalState.globalReactionErrorHandlers.forEach(f => f(error, this));
 	}
 
-	dispose() {
+	dispose() {// 处理掉
 		if (!this.isDisposed) {
 			this.isDisposed = true;
 			if (!this._isRunning) {

@@ -26,7 +26,7 @@ export function createClassPropertyDecorator(
 	/**
 	 * Can this decorator invoked with arguments? e.g. @decorator(args)
 	 */
-	allowCustomArguments: boolean
+	allowCustomArguments: boolean //表示该 decorator 是否支持传参调用， 例如@decorator(args)
 ): any {
 	function classPropertyDecorator(target: any, key: string, descriptor, customArgs?: IArguments, argLen?: number) {
 		invariant(allowCustomArguments || quacksLikeADecorator(arguments), "This function is a decorator, but it wasn't invoked like a decorator");
@@ -90,7 +90,7 @@ export function createClassPropertyDecorator(
 		}
 	}
 
-	if (allowCustomArguments) {
+	if (allowCustomArguments) {// 是否允许传参给 decorator
 		/** If custom arguments are allowed, we should return a function that returns a decorator */
 		return function() {
 			/** Direct invocation: @decorator bla */
@@ -121,6 +121,6 @@ export function runLazyInitializers(instance) {
 	}
 }
 
-function quacksLikeADecorator(args: IArguments): boolean {
+function quacksLikeADecorator(args: IArguments): boolean {// 传的参数形式 类似 装饰器使用的参数
 	return (args.length === 2 || args.length === 3) && typeof args[1] === "string";
 }

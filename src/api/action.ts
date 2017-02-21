@@ -2,7 +2,7 @@ import {invariant, addHiddenProp} from "../utils/utils";
 import {createClassPropertyDecorator} from "../utils/decorators";
 import {createAction, executeAction} from "../core/action";
 
-export interface IActionFactory {
+export interface IActionFactory {// 动作工厂
 	// nameless actions
 	<A1, R, T extends (a1: A1) => R>(fn: T): T;
 	<A1, A2, R, T extends (a1: A1, a2: A2) => R>(fn: T): T;
@@ -41,6 +41,7 @@ export interface IActionFactory {
 	bound(target: Object, propertyKey: string, descriptor?: PropertyDescriptor): void;
 }
 
+//行为域装饰器
 const actionFieldDecorator = createClassPropertyDecorator(
 	function (target, key, value, args, originalDescriptor) {
 		const actionName = (args && args.length === 1) ? args[0] : (value.name || key || "<unnamed action>");
@@ -57,6 +58,7 @@ const actionFieldDecorator = createClassPropertyDecorator(
 	true
 );
 
+//绑定行为装饰器
 const boundActionDecorator = createClassPropertyDecorator(
 	function (target, key, value) {
 		defineBoundAction(target, key, value);
