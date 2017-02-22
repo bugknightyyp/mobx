@@ -101,7 +101,7 @@ export function isComputingDerivation() {
 }
 
 export function checkIfStateModificationsAreAllowed() {
-	if (!globalState.allowStateChanges) {
+	if (!globalState.allowStateChanges) {//这个全局状态只有在这里用了，控制能否修改 observable 的数据
 		invariant(false, globalState.strictMode
 			? "It is not allowed to create or change state outside an `action` when MobX is in strict mode. Wrap the current method in `action` if this state change is intended"
 			: "It is not allowed to change the state when a computed value or transformer is being evaluated. Use 'autorun' to create reactive functions with side-effects."

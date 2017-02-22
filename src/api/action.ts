@@ -41,9 +41,9 @@ export interface IActionFactory {// 动作工厂
 	bound(target: Object, propertyKey: string, descriptor?: PropertyDescriptor): void;
 }
 
-//行为域装饰器
+
 const actionFieldDecorator = createClassPropertyDecorator(
-	function (target, key, value, args, originalDescriptor) {
+	function (target, key, value, args, originalDescriptor) {// onInitialize
 		const actionName = (args && args.length === 1) ? args[0] : (value.name || key || "<unnamed action>");
 		const wrappedAction = action(actionName, value);
 		addHiddenProp(target, key, wrappedAction);
@@ -54,13 +54,12 @@ const actionFieldDecorator = createClassPropertyDecorator(
 	function () {
 		invariant(false, "It is not allowed to assign new values to @action fields");
 	},
-	false,
-	true
+	false, //enumerable
+	true //allowCustomArguments
 );
 
-//绑定行为装饰器
 const boundActionDecorator = createClassPropertyDecorator(
-	function (target, key, value) {
+	function (target, key, value) {// onInitialize
 		defineBoundAction(target, key, value);
 	},
 	function (key) {
@@ -69,8 +68,8 @@ const boundActionDecorator = createClassPropertyDecorator(
 	function () {
 		invariant(false, "It is not allowed to assign new values to @action fields");
 	},
-	false,
-	false
+	false, //enumerable
+	false //allowCustomArguments
 );
 
 export var action: IActionFactory = function action(arg1, arg2?, arg3?, arg4?): any {
@@ -81,17 +80,18 @@ export var action: IActionFactory = function action(arg1, arg2?, arg3?, arg4?): 
 
 	if (arguments.length === 1 && typeof arg1 === "string")
 		return namedActionDecorator(arg1);
-
+	//以上3种情况需要动创建，最后这一种是 给装饰器模式用
 	return namedActionDecorator(arg2).apply(null, arguments);
 } as any;
 
+// action 与 action.bound的区别在于调用executeAction()时，scope的传递。前者，scope始终指向 实例化后的对象，后者指向你定义action时传递的 target
 action.bound = function boundAction(arg1, arg2?, arg3?) {
 	if (typeof arg1 === "function") {
 		const action = createAction("<not yet bound action>", arg1);
 		(action as any).autoBind = true;
 		return action;
 	}
-
+	//上面这种情况需要手动创建，最后这一种是 给装饰器模式用
 	return boundActionDecorator.apply(null, arguments);
 };
 
