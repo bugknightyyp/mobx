@@ -22,7 +22,7 @@ export function registerInterceptor<T>(interceptable: IInterceptable<T>, handler
 	});
 }
 
-export function interceptChange<T>(interceptable: IInterceptable<T>, change: T): T {// 拦截变化
+export function interceptChange<T>(interceptable: IInterceptable<T>, change: T): T {// 执行拦截器
 	const prevU = untrackedStart();
 	try {
 		const interceptors = interceptable.interceptors;

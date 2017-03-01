@@ -29,7 +29,7 @@ export interface IObservableArray<T> extends Array<T> {
 }
 
 // In 3.0, change to IArrayDidChange
-export interface IArrayChange<T> {
+export interface IArrayChange<T> {// 单个元素的值发生变化
 	type: "update";
 	object: IObservableArray<T>;
 	index: number;
@@ -38,7 +38,7 @@ export interface IArrayChange<T> {
 }
 
 // In 3.0, change to IArrayDidSplice
-export interface IArraySplice<T> {
+export interface IArraySplice<T> {// splice 操作变化
 	type: "splice";
 	object: IObservableArray<T>;
 	index: number;
@@ -125,7 +125,7 @@ class ObservableArrayAdministration<T> implements IInterceptable<IArrayWillChang
 	}
 
 	// adds / removes the necessary numeric properties to this object
-	updateArrayLength(oldLength: number, delta: number) {
+	updateArrayLength(oldLength: number, delta: number) {// 更新lastKnownLength以及保证合理的预留元素的长度
 		if (oldLength !== this.lastKnownLength)
 			throw new Error("[mobx] Modification exception: the internal structure of an observable array was changed. Did you use peek() to change it?");
 		this.lastKnownLength += delta;
@@ -141,7 +141,7 @@ class ObservableArrayAdministration<T> implements IInterceptable<IArrayWillChang
 			index = 0;
 		else if (index > length)
 			index = length;
-		else if (index < 0)
+		else if (index < 0)//可以使用负值
 			index = Math.max(0, length + index);
 
 		if (arguments.length === 1)
@@ -155,7 +155,7 @@ class ObservableArrayAdministration<T> implements IInterceptable<IArrayWillChang
 			newItems = [];
 
 		if (hasInterceptors(this)) {
-			const change = interceptChange<IArrayWillSplice<T>>(this as any, {
+			const change = interceptChange<IArrayWillSplice<T>>(this as any, {// 调用拦截器
 				object: this.array,
 				type: "splice",
 				index,
@@ -168,7 +168,7 @@ class ObservableArrayAdministration<T> implements IInterceptable<IArrayWillChang
 			newItems = change.added;
 		}
 
-		newItems = <T[]> newItems.map(v => this.enhancer(v, undefined));
+		newItems = <T[]> newItems.map(v => this.enhancer(v, undefined));// observable化新加的数据
 		const lengthDelta = newItems.length - deleteCount;
 		this.updateArrayLength(length, lengthDelta); // create or remove new entries
 		const res: T[] = this.values.splice(index, deleteCount, ...newItems); // FIXME: splat might exceed callstack size!
@@ -179,7 +179,7 @@ class ObservableArrayAdministration<T> implements IInterceptable<IArrayWillChang
 	}
 
 	notifyArrayChildUpdate<T>(index: number, newValue: T, oldValue: T) {
-		const notifySpy = !this.owned && isSpyEnabled();
+		const notifySpy = !this.owned && isSpyEnabled();// 目前还弄清楚 owned 含义
 		const notify = hasListeners(this);
 		const change = notify || notifySpy ? {
 				object: this.array,
@@ -522,7 +522,7 @@ function createArrayGetter(index: number) {
 	};
 }
 
-function reserveArrayBuffer(max: number) {
+function reserveArrayBuffer(max: number) {//预存一定数量的元素，以便能侦测到元素赋值，注意不是元素更新 eg: array[2] = {}
 	for (let index = OBSERVABLE_ARRAY_BUFFER_SIZE; index < max; index++)
 		createArrayBufferItem(index);
 	OBSERVABLE_ARRAY_BUFFER_SIZE = max;

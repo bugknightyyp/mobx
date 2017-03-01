@@ -20,11 +20,16 @@ export type IUNCHANGED = {};
 
 export const UNCHANGED: IUNCHANGED = {};
 
+
 export interface IObservableValue<T> {
 	get(): T;
 	set(value: T): void;
-	intercept(handler: IInterceptor<IValueWillChange<T>>): Lambda;
-	observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda;
+	intercept(handler: IInterceptor<IValueWillChange<T>>): Lambda;// 注册拦截器
+	observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda; // 注册监听器
+	/*
+		拦截器和监听器的区别：前者是在数据变化时，拦截该数据，可以修改它作为变化值，后者是接受变化值，执行listener;
+		observe 注册的 listener 和 derivation 机制还不一样，查看 setNewValue 方法
+	*/
 }
 
 declare var Symbol;
@@ -49,7 +54,7 @@ export class ObservableValue<T> extends BaseAtom implements IObservableValue<T>,
 		newValue = this.prepareNewValue(newValue) as any;
 		if (newValue !== UNCHANGED) {
 			const notifySpy = isSpyEnabled();
-			if (notifySpy) {
+			if (notifySpy) {//通知间谍
 				spyReportStart({
 					type: "update",
 					object: this,
@@ -62,27 +67,27 @@ export class ObservableValue<T> extends BaseAtom implements IObservableValue<T>,
 		}
 	}
 
-	private prepareNewValue(newValue): T | IUNCHANGED {
+	private prepareNewValue(newValue): T | IUNCHANGED {// 主要做了2件事： 执行ObservableValue的拦截器，调用enhancer将新数据observable化
 		checkIfStateModificationsAreAllowed();
 		if (hasInterceptors(this)) {
-			const change = interceptChange<IValueWillChange<T>>(this, { object: this, type: "update", newValue });
+			const change = interceptChange<IValueWillChange<T>>(this, { object: this, type: "update", newValue });//执行拦截器
 			if (!change)
 				return UNCHANGED;
 			newValue = change.newValue;
 		}
 		// apply modifier
-		newValue = this.enhancer(newValue, this.value, this.name);
+		newValue = this.enhancer(newValue, this.value, this.name);// 将新数据observable化
 		return this.value !== newValue
 			? newValue
 			: UNCHANGED
 		;
 	}
 
-	setNewValue(newValue: T) {
+	setNewValue(newValue: T) {// 设置新值，通知变化，调用listeners
 		const oldValue = this.value;
 		this.value = newValue;
-		this.reportChanged();
-		if (hasListeners(this)) {
+		this.reportChanged();// 执行 derivations
+		if (hasListeners(this)) {//执行 listeners
 			notifyListeners(this, {
 				type: "update",
 				object: this,
@@ -97,12 +102,12 @@ export class ObservableValue<T> extends BaseAtom implements IObservableValue<T>,
 		return this.value;
 	}
 
-	public intercept(handler: IInterceptor<IValueWillChange<T>>): Lambda {
+	public intercept(handler: IInterceptor<IValueWillChange<T>>): Lambda {// 注册拦截器
 		return registerInterceptor(this, handler);
 	}
 
-	public observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda {
-		if (fireImmediately)
+	public observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda {// 注册监听器
+		if (fireImmediately)// 决定是否是刚注册就执行
 			listener({
 				object: this,
 				type: "update",

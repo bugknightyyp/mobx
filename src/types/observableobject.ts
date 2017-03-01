@@ -169,6 +169,10 @@ export function generateObservablePropConfig(propName) {
 			return this.$mobx.values[propName].get();
 		},
 		set: function(v) {
+			/*
+				这里为什么没有调用 this.$mobx.values[propName].set(v);
+				是因为要调用 ObservableObject级别的 interceptors spy listeners
+			*/
 			setPropertyValue(this, propName, v);
 		}
 	};

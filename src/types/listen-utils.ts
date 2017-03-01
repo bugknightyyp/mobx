@@ -10,7 +10,7 @@ export function hasListeners(listenable: IListenable) {
 	return listenable.changeListeners && listenable.changeListeners.length > 0;
 }
 
-export function registerListener<T>(listenable: IListenable, handler: Function): Lambda {
+export function registerListener<T>(listenable: IListenable, handler: Function): Lambda {// 注册 listener
 	const listeners = listenable.changeListeners || (listenable.changeListeners = []);
 	listeners.push(handler);
 	return once(() => {
@@ -20,7 +20,7 @@ export function registerListener<T>(listenable: IListenable, handler: Function):
 	});
 }
 
-export function notifyListeners<T>(listenable: IListenable, change: T) {
+export function notifyListeners<T>(listenable: IListenable, change: T) {// 执行所有的 listeners
 	const prevU = untrackedStart();
 	let listeners = listenable.changeListeners;
 	if (!listeners)

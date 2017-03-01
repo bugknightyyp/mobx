@@ -8,6 +8,9 @@ export interface IAtom extends IObservable {
  * 1) detect when they are being _used_ and report this (using reportObserved). This allows mobx to make the connection between running functions and the data they used
  * 2) they should notify mobx whenever they have _changed_. This way mobx can re-run any functions (derivations) that are using this atom.
  */
+ /*
+		当某一字段被derivation使用时，建立2者
+ */
 export class BaseAtom implements IAtom {
 	isPendingUnobservation = true; // for effective unobserving. BaseAtom has true, for extra optimization, so its onBecomeUnobserved never gets called, because it's not needed
 	observers = [];
@@ -29,14 +32,14 @@ export class BaseAtom implements IAtom {
 	/**
 	 * Invoke this method to notify mobx that your atom has been used somehow.
 	 */
-	public reportObserved() {
+	public reportObserved() {// derivation收集自己依赖的 observable
 		reportObserved(this);
 	}
 
 	/**
 	 * Invoke this method _after_ this method has changed to signal mobx that all its observers should invalidate.
 	 */
-	public reportChanged() {
+	public reportChanged() {// 改变 observable.dependenciesState, 然后 启动 runReactions
 		startBatch();
 		propagateChanged(this);
 		endBatch();
@@ -48,8 +51,8 @@ export class BaseAtom implements IAtom {
 }
 
 export class Atom extends BaseAtom implements IAtom {
-	isPendingUnobservation = false; // for effective unobserving.
-	public isBeingTracked = false;
+	isPendingUnobservation = false; // for effective unobserving. // 使得 unobserving 有效，意思可以触发 onBecomeUnobserved 事件
+	public isBeingTracked = false; //表示至少有个derivation依赖它
 
 	/**
 	 * Create a new atom. For debugging purposes it is recommended to give it a name.

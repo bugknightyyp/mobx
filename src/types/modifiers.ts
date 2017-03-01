@@ -20,8 +20,8 @@ export function createModifierDescriptor<T>(enhancer: IEnhancer<T>, initialValue
 		enhancer
 	};
 }
-
-export function deepEnhancer(v, _, name) {//深度增强器，根据数据的处理分类处理
+// 修饰器决定处理数据的方案
+export function deepEnhancer(v, _, name) {// deep: 遍历递归所有的字段，都处理成 observable
 	if (isModifierDescriptor(v))
 		fail("You tried to assign a modifier wrapped value to a collection, please define modifiers when creating the collection, not when modifying it");
 
@@ -37,10 +37,10 @@ export function deepEnhancer(v, _, name) {//深度增强器，根据数据的处
 	if (isES6Map(v))
 		return observable.shallowMap(v, name);
 
-	return v;
+	return v;// 如果是 primitive 类型 就不处理了
 }
 
-export function shallowEnhancer(v, _, name): any {
+export function shallowEnhancer(v, _, name): any {// shallow: 只将第一级的字段处理成observable
 	if (isModifierDescriptor(v))
 		fail("You tried to assign a modifier wrapped value to a collection, please define modifiers when creating the collection, not when modifying it");
 
@@ -58,7 +58,7 @@ export function shallowEnhancer(v, _, name): any {
 	return fail("The shallow modifier / decorator can only used in combination with arrays, objects and maps");
 }
 
-export function referenceEnhancer(newValue?) {// 引用增强器，不做处理
+export function referenceEnhancer(newValue?) {// reference: 不做任何处理
 	// never turn into an observable
 	return newValue;
 }
